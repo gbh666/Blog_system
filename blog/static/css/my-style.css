@@ -1,0 +1,53 @@
+body {
+    padding-top: 50px;
+}
+
+.my-table-add,
+.my-table-search {
+    padding: 0 15px;
+    margin-top: 15px;
+    display: inline-block;
+}
+
+/* 自定义左侧菜单栏 开始 */
+.my-sidebar-item {
+ height: 45px;
+    background-color: #35363a;
+    margin: 0 -20px;
+    border-bottom: 1px solid #27272b;
+}
+.my-sidebar-item:hover{
+    cursor: pointer;
+    background-color: #27272b;
+    border-left: 3px solid red;
+}
+
+.my-sidebar-item>a {
+    display: block;
+    text-decoration: none;
+    color: #eeeeee;
+    /*text-align: center;*/
+    line-height: 45px;
+}
+
+.nav-sidebar {
+    margin-bottom: 0;
+}
+
+.my-sidebar{
+    background-color: #35363a;
+}
+.arrow-down{
+    margin-top: 15px;
+}
+.my-menu{
+    background-color: #27272b;
+}
+.my-menu li a{
+    color: white;
+}
+.my-menu>li>a:hover{
+    background-color: #35363a;
+}
+/* 自定义左侧菜单栏 结束 */
+

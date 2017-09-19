@@ -1,0 +1,204 @@
+{% extends "userblog.html" %}
+{% load staticfiles %}
+{% block article_con %}
+    <div class="article_item">
+    {% csrf_token %}
+        <div class="row item_title_area">
+            <span id="article_nid" style="display:none">{{ article.nid }}</span>
+            <a href="" class="article_title col-sm-8">{{ article.title }}</a>
+        </div>
+        <div class="row article_content">
+            <div class="text col-sm-12">{{ article_detail.content|safe }}</div>
+        </div>
+
+        <a class="comment_num" style="cursor: pointer">
+            <i class="fa fa-commenting-o" aria-hidden="true"></i>&nbsp;评论&nbsp;
+            <span>{{ article.comment_count }}</span></a>
+
+        <a class="poll_num" style="cursor: pointer">
+            <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>&nbsp;赞&nbsp;
+            <span>{{ article.up_count }}</span></a>
+        <span class="error"></span>
+        <hr>
+        <h5>已有评论：</h5>
+        <div class="comment_box">
+
+        </div>
+
+
+    </div>
+
+    <div><i class="fa fa-commenting-o" aria-hidden="true" style="margin-left: 20px"></i>&nbsp;&nbsp;发表评论</div>
+    <div class="comment_body">
+
+        <textarea name="comment" cols="50" rows="10" id="edit_comment"></textarea>
+        <p>
+            <button class="btn btn-success" id="comment_btn">评论</button>
+        </p>
+    </div>
+
+    <script>
+    //自定义format函数
+    String.prototype.format= function(){
+               var args = arguments;
+               return this.replace(/\{(\d+)\}/g,function(s,i){
+                 return args[i];
+               });
+        };
+
+    function comment_tree(comment_list) {
+        var html="";
+
+        $.each(comment_list,function (k,v) {
+
+            var comment_str = '<div class="comment_item">';
+
+            var temp = '<div class="avatar_body"><a href=""><img class="comment_user_avatar" src="{0}" alt="">' +
+                '</a></div><div class="article_item_body"><a href="">{1}</a>&nbsp;&nbsp;<a href="">{2}</a>' +
+                '<a class="comment_poll_num pull-right" style="cursor: pointer"><i class="fa fa-thumbs-o-up" ' +
+                'aria-hidden="true"></i>&nbsp;赞&nbsp;<span>{3}</span></a><a class="reply_btn pull-right" ' +
+                'style="cursor: pointer"><i class="fa fa-commenting-o" aria-hidden="true"></i>&nbsp;回复&nbsp; ' +
+                '</a><span class="{4}"></span><p>{5}</p></div>';
+
+            temp=temp.format(v["user__avatar"], v["create_time"],v["user__username"],v["up_count"],v["nid"], v["content"]);
+
+            comment_str+=temp;
+            if (v["children_comments"]){
+                comment_str+=comment_tree(v["children_comments"])
+            }
+            comment_str+="</div>";
+            html+=comment_str
+
+        });
+        return html
+
+    }
+
+
+    $(function () {
+        $.ajax({
+            url:"",
+            type:"GET",
+            success:function (data) {
+                var my_comment_list = JSON.parse(data);
+                //处理s字符串
+                s=comment_tree(my_comment_list);
+
+                $(".comment_box").append(s)
+            }
+        })
+    })
+    
+    </script>
+
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/jquery.cookie.js' %}"></script>
+
+
+    <script>
+
+        var article_nid = $("#article_nid").html();
+        var parent_comment_id="";
+        var father_comment_username="";
+        var parent_comment_box = "";
+        //点赞按钮
+        $(".poll_num").click(function () {
+            {% if request.user.is_authenticated %}
+
+                $.ajax({
+                    headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                    url: "poll/",
+                    type: "POST",
+                    data: {article_nid: article_nid},
+                    success: function (data) {
+                        data = JSON.parse(data);
+                        if (data.flag) {
+                            $(".poll_num").children("span").text(parseInt($(".poll_num").children("span").text()) + 1)
+                        }
+                        else {
+                            $(".error").text(data.error_msg).css("color", "red");
+                            setTimeout(function () {
+                                $(".error").text("")
+                            }, 1000)
+                        }
+                    }
+
+                });
+
+            {% else %}
+                location.href = "/login/?next={{ request.path }}";
+
+            {% endif %}
+        });
+
+        //评论按钮
+        $("#comment_btn").click(function () {
+            var html_str = K_obj.text();
+            console.log(html_str);
+
+            var cut_index=html_str.indexOf("\n");
+
+            var comment_content = html_str.substr(cut_index+1);
+
+            {% if request.user.is_authenticated %}
+                $.ajax({
+                    headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                    url: "blog/comment/",
+                    type: "POST",
+                    data: {"comment_content": comment_content,
+                           "article_nid": article_nid,
+                           "parent_comment_id":parent_comment_id},
+                    success: function (data) {
+                        data = JSON.parse(data);
+
+                        s='<div class="comment_item"><div class="avatar_body"><a href=""><img class="comment_user_avatar" src="{0}" alt="">' +
+                            '</a></div><div class="article_item_body"><a href="">{1}</a>&nbsp;&nbsp;<a href="">{2}</a>' +
+                            '<a class="comment_poll_num pull-right" style="cursor: pointer"><i class="fa fa-thumbs-o-up" ' +
+                            'aria-hidden="true"></i>&nbsp;赞&nbsp;<span>{3}</span></a><a class="reply_btn pull-right" ' +
+                            'style="cursor: pointer"><i class="fa fa-commenting-o" aria-hidden="true"></i>&nbsp;回复&nbsp; ' +
+                            '</a><span class="{4}"></span><p>{5}</p></div></div>';
+                        s=s.format(
+                            '{{ request.user.avatar.url }}',
+                            data["comment_create_time"],
+                            '{{ request.user.username }}',
+                            data["comment_up_count"],
+                            data["comment_nid"],
+                            comment_content
+                        );
+
+                        parent_comment_box.append(s);
+                        K_obj.html('')
+                    }
+                });
+            {% else %}
+                location.href = "/login/?next={{ request.path }}";
+
+            {% endif %}
+
+        });
+
+        //回复按钮
+        $(".comment_box").on("click",".reply_btn",function () {
+            parent_comment_box = $(this).parent().parent();
+            parent_comment_id=$(this).next().attr("class");
+            father_comment_username=$(this).siblings().eq(1).text();
+            K_obj.focus();
+            K_obj.appendHtml("@"+father_comment_username+'\n');
+        });
+
+        //富文本编辑框
+        var K_obj=KindEditor.create("#edit_comment",{
+            resizeType: 1,
+            uploadJson: '/blog/upload_file/',
+            {#        额外的文件上传参数#}
+            extraFileUploadParams: {
+                "csrfmiddlewaretoken": "{{ csrf_token }}"
+            }
+        })
+
+    </script>
+
+{% endblock %}

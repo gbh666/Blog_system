@@ -1,0 +1,118 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
+    <script src="{% static 'bootstrap/js/jquery-3.2.1.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+
+    <style>
+        .container {
+            margin-top: 80px;
+        }
+
+        .valid_img {
+            width: 150px;
+            height: 40px;
+        }
+        .refresh{
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form>
+                <div class="form-group">
+                    <label for="user">用户名</label>
+                    <input type="text" class="form-control" id="user" placeholder="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="pwd">密码</label>
+                    <input type="password" class="form-control" id="pwd" placeholder="Password">
+                </div>
+
+                <div class="form-group">
+                    <label for="valid_code">验证码</label>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="valid_code" placeholder="valid_code"
+                                   name="valid">
+                        </div>
+
+                        <div class="col-md-6">
+                            <img src="/valid_code/" alt="" class="valid_img">
+                            <a class="refresh">刷新验证码</a>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <div class="col-md-6">
+                        <input type="button" value="Submit" class="btn btn-info" id="submit_btn">
+                        <span id="error_info"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/register/"><input type="button" value="register" class="btn btn-success"></a>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/jquery.cookie.js' %}"></script>
+<script>
+
+    //验证码刷新
+    $(".refresh").click(function () {
+        $(".valid_img")[0].src+="?";
+
+    });
+
+    //登录验证
+    $("#submit_btn").click(function () {
+        var username=$("#user").val();
+        var password=$("#pwd").val();
+        var valid_code=$("#valid_code").val();
+
+        $.ajax({
+            headers:{"X-CSRFToken":$.cookie('csrftoken')},
+            url:"/login/",
+            type:"POST",
+            data:{username:username,password:password,valid_code:valid_code},
+            success:function (data) {
+                data = JSON.parse(data);
+                if (data["user"]){
+{#                    alert(window.location.href);#}
+                    var target_url=window.location.href.split("=");
+                    if (target_url[1]){
+                        location.href=target_url[1]
+                    }
+                    else {
+                        location.href="/"
+                    }
+
+                }
+                else {
+                    $("#error_info").text(data["error_message"]).css({"color":"red","margin-left":"20px"})
+                }
+            }
+
+        })
+    })
+</script>
+</body>
+</html>

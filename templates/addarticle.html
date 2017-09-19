@@ -1,0 +1,89 @@
+{% extends 'back_stage.html' %}
+
+
+{% block con %}
+
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">Add Article</h3>
+        </div>
+
+        <form method="post" action="/blog/{{ request.user.username }}/article/add_article">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="article_title">Title</label>
+                <input type="text" class="form-control" id="article_title" placeholder="Title" name="article_title">
+            </div>
+
+            <div class="form-group">
+                <label for="article_desc">Desc</label>
+                <input type="text" class="form-control" id="article_desc" placeholder="Desc" name="article_desc">
+            </div>
+
+            <div class="form-group">
+                <label for="article_content">Content</label>
+                <textarea class="form-control" rows="15" id="article_content" name="article_content"></textarea>
+            </div>
+
+
+            <div class="form-group">
+                {% for tag in tag_list %}
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="tag" name="tags_nid" value="{{ tag.nid }}"> {{ tag.title }}
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {% for type_choice in type_choices %}
+                    <label class="radio-inline">
+                        <input type="radio" name="type_id" id="type_choice"
+                               value="{{ type_choice.0 }}"> {{ type_choice.1 }}
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+
+                <a class="btn btn-info col-md-12" role="button" data-toggle="collapse" href="#collapseExample"
+                   aria-expanded="false" aria-controls="collapseExample">
+                    个人分类
+                </a>
+
+                <div class="collapse" id="collapseExample">
+                    <div class="well">
+                        {% for category in category_list %}
+                            <label class="radio-inline">
+                                <input type="radio" name="category_nid" id="category"
+                                       value="{{ category.nid }}"> {{ category.title }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-default submit_btn">Submit</button>
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <script>
+        KindEditor.create("#article_content", {
+            resizeType: 1,
+            uploadJson: '/blog/upload_file/',
+            {#        额外的文件上传参数#}
+            extraFileUploadParams: {
+                "csrfmiddlewaretoken": "{{ csrf_token }}"
+            }
+        });
+
+
+    </script>
+
+
+{% endblock %}

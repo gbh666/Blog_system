@@ -1,0 +1,8 @@
+'<div class="avatar_body"><a href="">
+    <img class="comment_user_avatar" src="'+'{{ comment.user.avatar.url }}'+
+    '" alt=""></a></div><div class="article_item_body"><a href="">'+
+    '{{ comment.create_time|date:"Y-m-d G:i" }}'+'</a>&nbsp;&nbsp;<a href="">'+
+    '{{ comment.user.username }}'+'</a><a class="comment_poll_num pull-right" style="cursor: pointer">
+    <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>&nbsp;赞&nbsp;<span>'+'{{ comment.up_count }}'+'</span></a>
+    <a class="reply_btn pull-right" style="cursor: pointer"><i class="fa fa-commenting-o" aria-hidden="true"></i>&nbsp;回复&nbsp;
+    </a><span class="'+'{{ comment.nid }}'+'"></span><p>'+'{{ comment.content|safe }}'+'</p></div>'

@@ -1,0 +1,172 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap/css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/my-style.css' %}">
+    <script src="{% static 'bootstrap/js/jquery-3.2.1.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'font-awesome-4.7.0/css/font-awesome.min.css' %}">
+    <script src="{% static 'kindeditor-4.1.10/kindeditor-all.js' %}"></script>
+
+</head>
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/index/">博客系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+
+                <li><a>欢迎你&nbsp;&nbsp;&nbsp;{{ request.user }}</a></li>
+                <li></li>
+                <li><a href="/logout/">注销</a></li>
+                <li><a href="">修改密码</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class=" col-md-2 sidebar my-sidebar">
+            <div class="my-sidebar-item" data-toggle="collapse" data-target="#my-menu-son1">
+                <a><i class="fa fa-home fa-fw" aria-hidden="true"></i>&nbsp; 菜单一
+                    <i class="fa fa-chevron-down col-md-3 pull-right arrow-down" aria-hidden="true"></i></a>
+            </div>
+            <ul id="my-menu-son1" class="nav nav-sidebar collapse my-menu">
+                <li><a href="/blog/{{ request.user.username }}/article/add_article"><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp; 添加新随笔</a></li>
+                <li><a><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp; 用户信息</a></li>
+            </ul>
+            <div class="my-sidebar-item" data-toggle="collapse" data-target="#my-menu-son2">
+                <a><i class="fa fa-book fa-fw" aria-hidden="true"></i>&nbsp; 菜单二
+                    <i class="fa fa-chevron-down col-md-3 pull-right arrow-down" aria-hidden="true"></i></a></div>
+            <ul id="my-menu-son2" class="nav nav-sidebar collapse my-menu">
+                <li><a><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp; Nav item</a></li>
+                <li><a><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp; Nav item again</a></li>
+            </ul>
+            <div class="my-sidebar-item" data-toggle="collapse" data-target="#my-menu-son3">
+                <a><i class="fa fa-cog fa-fw" aria-hidden="true"></i>&nbsp; 菜单三
+                    <i class="fa fa-chevron-down col-md-3 pull-right arrow-down" aria-hidden="true"></i></a></div>
+            <ul id="my-menu-son3" class="nav nav-sidebar collapse my-menu">
+                <li><a><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp; Nav item again</a></li>
+                <li><a><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp; One more nav</a></li>
+                <li><a><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp; Another nav item</a></li>
+            </ul>
+        </div>
+        <div class=" col-md-10 col-md-offset-2 main">
+            <!-- 面板 开始 -->
+        {% block con %}
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Article Info</h3>
+                </div>
+                <!-- my-table-tool start -->
+                <div class="panel-body">
+                    <!-- 表格 开始 -->
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th class="col-md-8">标题</th>
+                            <th>评论数</th>
+                            <th>点赞数</th>
+                            <th>操作</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for article in article_list %}
+
+                            <tr>
+                                <td style="display: none">{{ article.nid }}</td>
+                                <td><a href="/blog/{{ article.blog.user }}/article/{{ article.nid }}">{{ article.title }}</a></td>
+                                <td>{{ article.comment_count }}</td>
+                                <td>{{ article.up_count }}</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm edit_btn">编辑</button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-danger delete_btn btn-sm">删除</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+
+                        </tbody>
+                    </table>
+                    <!-- 表格 结束 -->
+                    <!-- 分页 开始 -->
+                    <div class="row col-md-4 pull-right">
+                        {#分页开始#}
+
+                        <ul class="pagination my_pagination">
+                            {% if article_list.has_previous %}
+                                <li><a href="/?page={{ article_list.previous_page_number }}">上一页</a></li>
+                            {% else %}
+                                <li class="disabled"><a href="#">上一页</a></li>
+                            {% endif %}
+
+                            {% for num in p_obj.page_range %}
+                                {% if num|add:10 == page_num|add:10 %}
+                                    <li class="active"><a href="/blog/{{ request.user.username }}/article/back_stage/?page={{ num }}">{{ num }}</a></li>
+                                {% else %}
+                                    <li><a href="/blog/{{ request.user.username }}/article/back_stage/?page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if article_list.has_next %}
+                                <li><a href="/?page={{ article_list.next_page_number }}">下一页</a></li>
+                            {% else %}
+                                <li class="disabled"><a href="#">下一页</a></li>
+                            {% endif %}
+                        </ul>
+
+                    </div>
+                    <!-- 分页 结束 -->
+                </div>
+            </div>
+            <!-- 面板 结束 -->
+        {% endblock %}
+        </div>
+        <!-- container 结束 -->
+
+    </div>
+</div>
+
+<script src="{% static 'js/jquery.cookie.js' %}"></script>
+
+<script>
+    $(".delete_btn").click(function () {
+        $(this).parent().parent().remove();
+        var article_nid=$(this).parent().siblings().eq(0).text();
+        $.ajax({
+            headers: {"X-CSRFToken": $.cookie('csrftoken')},
+            url:"/blog/article/delete_article",
+            type:"POST",
+            data:{article_nid:article_nid},
+            success:function (data) {
+                alert(data)
+            }
+        })
+    })
+
+
+</script>
+
+
+</body>
+</html>

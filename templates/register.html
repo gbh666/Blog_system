@@ -1,0 +1,189 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
+    <script src="{% static 'bootstrap/js/jquery-3.2.1.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+
+    <style>
+        .container {
+            margin-top: 60px;
+        }
+
+        .valid_img {
+            width: 150px;
+            height: 40px;
+        }
+
+        .refresh {
+            cursor: pointer;
+        }
+
+        .error {
+            color: red;
+            margin-left: 20px;
+        }
+
+        .file_avatar {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+
+        .sol {
+            position: absolute;
+            top: 0;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+        }
+
+        #file_choose {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form>
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_username">用户名</label>
+                    {{ form_obj.username }}<span class="username_error error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password">密码</label>
+                    {{ form_obj.password }}<span class="password_error error"></span>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="id_repeat_password">确认密码</label>
+                    {{ form_obj.repeat_password }}<span class="repeat_password_error error"></span>
+
+                    <div class="form-group">
+                        <label for="id_email">邮箱</label>
+                        {{ form_obj.email }}<span class="email_error error"></span>
+                    </div>
+
+
+                    <div class="form-group file_avatar">
+                        <label for="file_img">头像</label>
+                        <img src="{% static 'img/default.jpg' %}" alt="" id="file_img" class="sol">
+                        <input type="file" id="file_choose" class="sol">
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_valid_code">验证码</label>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form_obj.valid_code }}
+                                <span class="valid_code_error error"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <img src="/valid_code/" alt="" class="valid_img">
+                                <a class="refresh">刷新验证码</a>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <input type="button" value="Submit" class="btn btn-info" id="submit_reg">
+                    </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/jquery.cookie.js' %}"></script>
+<script>
+
+    //验证码刷新
+    $(".refresh").click(function () {
+        $(".valid_img")[0].src += "?";
+
+    });
+
+    //头像预览
+    $("#file_choose").change(function () {
+        var reader = new FileReader();
+
+        var first_file = $(this)[0].files[0]; //上传文件对象
+        reader.readAsDataURL(first_file); //拿到文件url
+        reader.onload = function () {
+            $("#file_img")[0].src = this.result //把目标img标签的src属性赋值为url结果
+        }
+
+    });
+
+    //注册验证
+    $("#submit_reg").click(function () {
+        var username = $("#id_username").val();
+        var password = $("#id_password").val();
+        var repeat_password = $("#id_repeat_password").val();
+        var email = $("#id_email").val();
+        var valid_code = $("#id_valid_code").val();
+        var csrf = $("[name='csrfmiddlewaretoken']").val();
+        var formData = new FormData();
+
+        formData.append("username",username);
+        formData.append("password",password);
+        formData.append("repeat_password",repeat_password);
+        formData.append("email",email);
+        formData.append("valid_code",valid_code);
+        formData.append("csrfmiddlewaretoken",csrf);
+
+        //组装文件对象
+        formData.append("img",$("#file_choose")[0].files[0]);
+
+        $.ajax({
+            url: "/register/",
+            type: "POST",
+            data: formData,
+            processData: false,      // 使用formdata,processData,contentType必须设为false
+            contentType: false,
+            success: function (data) {
+                data = JSON.parse(data);
+                if (data.status) {
+                    location.href = "/login/"
+                }
+                else {
+                    $(".error").text("");
+
+                    $(".username_error").text(data.error_msg["username"]);
+                    $(".repeat_password_error").text(data["error_msg"]["repeat_password"]);
+                    $(".email_error").text(data["error_msg"]["email"]);
+                    $(".valid_code_error").text(data["error_msg"]["valid_code"]);
+
+                    if (password.length >= 8) {
+                        $(".repeat_password_error").text(data["error_msg"]["__all__"]);
+                    }
+                    else {
+                        $(".password_error").text(data["error_msg"]["password"]);
+                    }
+
+                }
+            }
+
+        })
+    })
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+{% load staticfiles %}
+{% load my_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
+    <script src="{% static 'bootstrap/js/jquery-3.2.1.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'font-awesome-4.7.0/css/font-awesome.min.css' %}">
+    <script src="{% static 'kindeditor-4.1.10/kindeditor-all.js' %}"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+
+        }
+
+        body{
+            background-image: url("{% static 'img/背景1.jpg' %}");
+        }
+
+        .main_content{
+            background-color: white;
+        }
+        .blog_title{
+            color: whitesmoke;
+            margin-left: 20px;
+        }
+
+        .item_title_area{
+            border-left: 5px solid #31b0d5;
+            border-bottom: 1px solid lightgray;
+        }
+        .article_title{
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .navbar{
+            margin-bottom: 0;
+        }
+
+        .article_item,.comment_body{
+            min-height: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            margin-left: 20px;
+            margin-top: 1em;
+            margin-right: 2em;
+        }
+        .text{
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .post_desc{
+            text-align: right;
+            padding-right: 10px;
+            color: #a3a3a3;
+        }
+        .text{
+            text-align: justify;
+            text-indent: 2em;
+        }
+        .comment_user_avatar{
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            margin-right: 10px;
+            float: left;
+        }
+
+        .article_item_body{
+            text-align: justify;
+{#            line-height: 150%;#}
+        }
+        .fn_body{
+            float: right;
+        }
+        .comment_box .comment_item{
+            margin-top: 20px;
+            margin-left: 30px;
+            border-bottom: 1px solid whitesmoke;
+        }
+    </style>
+
+</head>
+<body>
+<div class="container">
+
+<div class="row">
+    <h1 class="blog_title">{{ user_obj.username }}</h1>
+    <h2></h2>
+    <h1></h1>
+    <h1></h1>
+    <nav class="navbar navbar-inverse">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/index/">博客系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+
+                    <li><a href="">首页</a></li>
+                    <li><a href="/blog/{{ request.user.username }}/article/add_article">新随笔</a></li>
+                    <li><a href="">订阅</a></li>
+                    <li><a href="/blog/{{ request.user.username }}/article/back_stage">管理</a></li>
+
+            </ul>
+
+        </div>
+    </div>
+</nav>
+</div>
+{#end nav-bar#}
+
+<div class="row main_content">
+        <div class="article_content col-md-9">
+        {% block article_con %}
+            <div class="article_list">
+                {% for article in article_list %}
+                <div class="article_item">
+                    <div class="row item_title_area">
+                        <a href="/blog/{{ article.blog.user }}/article/{{ article.nid }}" class="article_title col-sm-8">{{ article.title }}</a>
+                    </div>
+                    <div class="row article_content">
+                        <div class="text col-sm-12">{{ article.desc }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="post_desc">
+                            <span>posted&nbsp;@</span>&nbsp;&nbsp;
+                            <span class="timer">{{ article.create_time|date:"Y-m-d G:i" }}</span>&nbsp;&nbsp;
+                            <span>{{ article.blog.user }}</span>
+                            <i class="fa fa-commenting-o" aria-hidden="true"></i>&nbsp;<a href="">评论{{ article.comment_count }}</a>
+                            <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>&nbsp;<a href="">赞{{ article.up_count }}</a>
+                            <span></span>
+                        </div>
+                    </div>
+
+
+                </div>
+        {% endfor %}
+
+            </div>
+        {% endblock %}
+        </div>
+
+        <div class="sidebar col-md-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading">个人信息</div>
+                <div class="panel-body">
+                    <p><img src="{{ user_obj.avatar.url }}" alt="" width="70px" height="70px"></p>
+                    <p>昵称：{{ user_obj.nickname }}</p>
+                    <p>园龄：{{ user_obj.create_time|garden_age }}天</p>
+                    <p>粉丝：{{ fans_num }}</p>
+                    <p>关注：{{ follow_num }}</p>
+                </div>
+            </div>
+
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">随笔分类</h3>
+                </div>
+                <div class="panel-body">
+                       {% for foo in category_list %}
+                           <p><a href="/blog/{{ user_obj.username }}/article/category/{{ foo.1 }}">{{ foo.0 }}&nbsp;&nbsp;({{ foo.2 }})</a></p>
+                       {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">标签分类</h3>
+                </div>
+                <div class="panel-body">
+                    {% for foo in tag_list %}
+                           <p><a href="/blog/{{ user_obj.username }}/article/tag/{{ foo.1 }}">{{ foo.0 }}&nbsp;&nbsp;({{ foo.2 }})</a></p>
+                       {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">随笔档案</h3>
+                </div>
+                <div class="panel-body">
+                    {% for current_time in current_time_list %}
+                        <p><a href="/blog/{{ user_obj.username }}/article/date/{{ current_time.0 }}">{{ current_time.0 }}&nbsp;&nbsp;({{ current_time.1 }})</a></p>
+                    {% endfor %}
+
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+{% block script %}
+<script>
+
+
+
+</script>
+{% endblock %}
+
+
+</body>
+</html>
